@@ -21,12 +21,6 @@ A full-featured streaming and download platform for movies, series, and anime bu
 - Mark series as completed or ongoing
 - Delete content (movies, series, seasons, episodes)
 
-## Default Accounts
-
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | admin123 |
-| User | test | test123 |
 
 ## Installation
 
