@@ -1,0 +1,131 @@
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Dashboard</h1>
+    <p class="admin-subtitle">Overview of your platform</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card admin-stat">
+        <div class="stat-icon" style="background: rgba(123, 45, 142, 0.2); color: #9D4FB0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card admin-stat">
+        <div class="stat-icon" style="background: rgba(0, 229, 204, 0.2); color: #00E5CC;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
+                <line x1="7" y1="2" x2="7" y2="22"></line>
+                <line x1="17" y1="2" x2="17" y2="22"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+            </svg>
+        </div>
+        <div class="stat-value">{{ total_movies }}</div>
+        <div class="stat-label">Movies</div>
+    </div>
+    <div class="stat-card admin-stat">
+        <div class="stat-icon" style="background: rgba(255, 184, 0, 0.2); color: #FFB800;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+        </div>
+        <div class="stat-value">{{ total_series }}</div>
+        <div class="stat-label">Series</div>
+    </div>
+    <div class="stat-card admin-stat">
+        <div class="stat-icon" style="background: rgba(255, 27, 109, 0.2); color: #FF1B6D;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </div>
+        <div class="stat-value">{{ total_views }}</div>
+        <div class="stat-label">Total Views</div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="admin-sections">
+    <div class="admin-section">
+        <div class="section-header">
+            <h3>Recent Users</h3>
+            <a href="{{ url_for('admin_users') }}" class="section-link">View All</a>
+        </div>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <img src="{{ user.avatar_url() }}" alt="" class="user-avatar-sm">
+                                    <span>{{ user.username }}</span>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                <span class="badge badge-status badge-{{ 'active' if user.is_active else 'banned' }}">
+                                    {{ 'Active' if user.is_active else 'Banned' }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-cell">No users yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="section-header">
+            <h3>Recent Movies</h3>
+            <a href="{{ url_for('admin_movies') }}" class="section-link">View All</a>
+        </div>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Views</th>
+                        <th>Posted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in recent_movies %}
+                        <tr>
+                            <td>{{ movie.title }}</td>
+                            <td>{{ movie.category.name if movie.category else '-' }}</td>
+                            <td>{{ movie.views }}</td>
+                            <td>{{ movie.created_at.strftime('%b %d, %Y') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-cell">No movies yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

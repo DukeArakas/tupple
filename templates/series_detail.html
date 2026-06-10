@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ series.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Series Header -->
+    <div class="series-hero">
+        <div class="series-cover">
+            <img src="{{ series.cover_url() }}" alt="{{ series.title }}">
+            <div class="series-cover-overlay"></div>
+        </div>
+        <div class="series-hero-info">
+            <h1 class="series-title">{{ series.title }}</h1>
+            <div class="series-meta">
+                <span class="badge badge-status badge-{{ series.status }}">{{ series.status }}</span>
+                <span>{{ series.season_count() }} season{{ 's' if series.season_count() != 1 }}</span>
+                <span>{{ series.episode_count() }} episode{{ 's' if series.episode_count() != 1 }}</span>
+                <span>{{ series.views }} views</span>
+            </div>
+            {% if series.description %}
+                <p class="series-description">{{ series.description }}</p>
+            {% endif %}
+            <div class="series-actions">
+                {% if episodes %}
+                    <a href="{{ url_for('watch_episode', series_id=series.id, episode_id=episodes[0].id) }}" class="btn btn-primary btn-lg">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Watch Now
+                    </a>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline" id="playlist-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add to Playlist
+                        </button>
+                        <div class="dropdown-menu" id="playlist-dropdown">
+                            {% if user_playlists %}
+                                {% for pl in user_playlists %}
+                                    <button class="dropdown-item add-series-to-playlist" data-playlist-id="{{ pl.id }}" data-series-id="{{ series.id }}">
+                                        {{ pl.name }} ({{ pl.item_count() }})
+                                    </button>
+                                {% endfor %}
+                            {% else %}
+                                <span class="dropdown-empty">No playlists yet</span>
+                            {% endif %}
+                            <a href="{{ url_for('playlists') }}" class="dropdown-item dropdown-create">Create New Playlist</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Season Tabs -->
+    {% if seasons %}
+        <div class="season-tabs">
+            {% for season in seasons %}
+                <a href="?season={{ season.id }}" 
+                   class="season-tab {% if current_season and current_season.id == season.id %}active{% endif %}">
+                    Season {{ season.season_number }}
+                    {% if season.title %}- {{ season.title }}{% endif %}
+                    <span class="season-ep-count">{{ season.episode_count }} ep</span>
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Episode List -->
+        <div class="episode-list">
+            {% if current_season %}
+                <h3 class="episode-list-title">Season {{ current_season.season_number }} Episodes</h3>
+            {% endif %}
+            {% for episode in episodes %}
+                <div class="episode-row">
+                    <div class="episode-thumb">
+                        <img src="{{ episode.thumbnail_url() }}" alt="{{ episode.title }}">
+                        <div class="episode-play-overlay">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="episode-info">
+                        <div class="episode-number">EP {{ "%02d"|format(episode.episode_number) }}</div>
+                        <h4 class="episode-title">{{ episode.title }}</h4>
+                        {% if episode.description %}
+                            <p class="episode-desc">{{ episode.description[:100] }}{% if episode.description|length > 100 %}...{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    <div class="episode-meta">
+                        {% if episode.duration %}<span>{{ episode.duration }} min</span>{% endif %}
+                        <span>{{ episode.views }} views</span>
+                    </div>
+                    <div class="episode-actions">
+                        <a href="{{ url_for('watch_episode', series_id=series.id, episode_id=episode.id) }}" class="btn btn-primary btn-sm">Watch</a>
+                        <a href="{{ url_for('download', content_type='episode', content_id=episode.id) }}" class="btn btn-outline btn-sm">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No episodes in this season yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No seasons added yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

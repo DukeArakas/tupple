@@ -1,0 +1,130 @@
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Add Episode</h1>
+    <a href="{{ url_for('admin_manage_series', series_id=series.id) }}" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back to {{ series.title }}
+    </a>
+</div>
+
+<div class="admin-form-container">
+    <form method="POST" action="{{ url_for('admin_add_episode', series_id=series.id) }}" enctype="multipart/form-data" class="admin-form" id="episode-form">
+        {{ form.hidden_tag() }}
+
+        <div class="form-grid">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="season_id">Season *</label>
+                    <select name="season_id" id="season_id" class="form-select" required>
+                        {% for season in seasons %}
+                            <option value="{{ season.id }}">Season {{ season.season_number }}{% if season.title %} - {{ season.title }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.episode_number.label }}
+                        {{ form.episode_number(class='form-input', placeholder='1') }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.duration.label }}
+                        {{ form.duration(class='form-input', placeholder='45') }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.title.label }}
+                    {{ form.title(class='form-input', placeholder='Episode title') }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label }}
+                    {{ form.description(class='form-textarea', rows='4', placeholder='Episode description...') }}
+                </div>
+            </div>
+
+            <div class="form-col">
+                <div class="form-group">
+                    {{ form.video_source_type.label }}
+                    {{ form.video_source_type(class='form-select', id='video-source-type') }}
+                </div>
+
+                <div class="form-group" id="video-file-group">
+                    {{ form.video_file.label }}
+                    <div class="file-dropzone file-dropzone-video">
+                        <div class="dropzone-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span>Click to upload video</span>
+                            <small>MP4, MKV up to 500MB</small>
+                        </div>
+                        {{ form.video_file(class='file-input', accept='video/*', id='video-file-input') }}
+                    </div>
+                </div>
+
+                <div class="form-group" id="video-url-group" style="display: none;">
+                    {{ form.video_url.label }}
+                    {{ form.video_url(class='form-input', placeholder='https://youtube.com/watch?v=...') }}
+                    <small class="form-hint">YouTube or any direct video URL</small>
+                </div>
+
+                <div class="form-group">
+                    {{ form.thumbnail.label }}
+                    <div class="file-dropzone" id="thumb-dropzone">
+                        <div class="dropzone-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <span>Click to upload thumbnail</span>
+                            <small>Optional - PNG, JPG</small>
+                        </div>
+                        {{ form.thumbnail(class='file-input', accept='image/*', id='thumb-input') }}
+                        <div class="file-preview" id="thumb-preview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_manage_series', series_id=series.id) }}" class="btn btn-outline">Cancel</a>
+            {{ form.submit(class='btn btn-primary btn-lg') }}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('video-source-type').addEventListener('change', function() {
+    const fileGroup = document.getElementById('video-file-group');
+    const urlGroup = document.getElementById('video-url-group');
+    if (this.value === 'upload') {
+        fileGroup.style.display = 'block';
+        urlGroup.style.display = 'none';
+    } else {
+        fileGroup.style.display = 'none';
+        urlGroup.style.display = 'block';
+    }
+});
+
+document.getElementById('thumb-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('thumb-preview').innerHTML = '<img src="' + e.target.result + '">';
+            document.getElementById('thumb-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Movies</h1>
+    <p class="admin-subtitle">Manage posted movies</p>
+</div>
+
+<!-- Toolbar -->
+<div class="admin-toolbar">
+    <div class="admin-toolbar-left">
+        <form action="{{ url_for('admin_movies') }}" method="get" class="admin-search">
+            <select name="category" onchange="this.form.submit()" class="filter-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <a href="{{ url_for('admin_post_movie') }}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Post New Movie
+    </a>
+</div>
+
+<!-- Movies Grid (Admin View) -->
+<div class="admin-grid">
+    {% for movie in movies.items %}
+        <div class="admin-card">
+            <div class="admin-card-image">
+                <img src="{{ movie.cover_url() }}" alt="{{ movie.title }}">
+            </div>
+            <div class="admin-card-body">
+                <h4 class="admin-card-title">{{ movie.title[:40] }}{% if movie.title|length > 40 %}...{% endif %}</h4>
+                <div class="admin-card-meta">
+                    <span>{{ movie.category.name if movie.category else '-' }}</span>
+                    <span>{{ movie.views }} views</span>
+                </div>
+                <div class="admin-card-actions">
+                    <a href="{{ url_for('movie_detail', movie_id=movie.id) }}" target="_blank" class="btn btn-sm btn-outline">View</a>
+                    <form action="{{ url_for('admin_delete_movie', movie_id=movie.id) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this movie?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No movies posted yet.</p>
+            <a href="{{ url_for('admin_post_movie') }}" class="btn btn-primary">Post First Movie</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if movies.pages > 1 %}
+    <div class="pagination">
+        {% if movies.has_prev %}
+            <a href="{{ url_for('admin_movies', page=movies.prev_num, category=category_id) }}" class="page-link">Previous</a>
+        {% endif %}
+        {% for page_num in movies.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == movies.page %}
+                    <span class="page-link active">{{ page_num }}</span>
+                {% else %}
+                    <a href="{{ url_for('admin_movies', page=page_num, category=category_id) }}" class="page-link">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span class="page-ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if movies.has_next %}
+            <a href="{{ url_for('admin_movies', page=movies.next_num, category=category_id) }}" class="page-link">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

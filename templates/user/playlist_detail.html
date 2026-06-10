@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ playlist.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    {% include 'user/sidebar.html' %}
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <a href="{{ url_for('playlists') }}" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back to Playlists
+            </a>
+            <h1>{{ playlist.name }}</h1>
+            {% if playlist.description %}<p>{{ playlist.description }}</p>{% endif %}
+        </div>
+
+        {% if playlist.items.count() > 0 %}
+            <div class="playlist-items">
+                {% for item in playlist.items %}
+                    <div class="playlist-item-row" data-item-id="{{ item.id }}">
+                        {% if item.movie %}
+                            <a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}" class="playlist-item-thumb">
+                                <img src="{{ item.movie.cover_url() }}" alt="{{ item.movie.title }}">
+                            </a>
+                            <div class="playlist-item-info">
+                                <h4><a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}">{{ item.movie.title }}</a></h4>
+                                <span>Movie</span>
+                            </div>
+                        {% elif item.episode %}
+                            <a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}" class="playlist-item-thumb">
+                                <img src="{{ item.episode.thumbnail_url() }}" alt="{{ item.episode.title }}">
+                            </a>
+                            <div class="playlist-item-info">
+                                <h4><a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}">{{ item.episode.title }}</a></h4>
+                                <span>{{ item.episode.series.title }} - S{{ item.episode.season.season_number }} EP{{ item.episode.episode_number }}</span>
+                            </div>
+                        {% endif %}
+                        <button class="btn btn-icon btn-danger remove-from-playlist" data-playlist-id="{{ playlist.id }}" data-item-id="{{ item.id }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>This playlist is empty. Start adding videos!</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Browse Content</a>
+            </div>
+        {% endif %}
+
+        <div class="playlist-actions-footer">
+            <button class="btn btn-danger" id="delete-playlist-btn" data-playlist-id="{{ playlist.id }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete Playlist
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

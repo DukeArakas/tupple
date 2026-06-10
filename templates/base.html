@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tupple{% endblock %} - Movies & Anime</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- WebGL Background Canvas -->
+    <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Navigation -->
+    {% include 'partials/nav.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}" data-auto-dismiss>
+                            {{ message }}
+                            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'partials/footer.html' %}
+
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="search-overlay">
+        <div class="search-overlay-content">
+            <button class="search-close" id="search-close">&times;</button>
+            <form action="{{ url_for('search') }}" method="get" class="search-form-large">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" name="q" placeholder="Search movies, series, anime..." autocomplete="off" autofocus>
+            </form>
+            <div class="search-suggestions">
+                <p class="search-hint">Press Enter to search</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

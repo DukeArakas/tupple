@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title" data-scramble>Tupple</h1>
+        <p class="hero-subtitle">Movies & Anime. Watch. Download. Curate.</p>
+        <div class="hero-actions">
+            <a href="#trending" class="btn btn-primary btn-lg">Explore</a>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-outline btn-lg">Get Started</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Category Pills -->
+<section class="category-pills">
+    <div class="container">
+        <div class="pills-scroll">
+            {% for cat in categories %}
+                <a href="{{ url_for('category_page', slug=cat.slug) }}" class="pill">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Trending Movies -->
+<section class="content-section" id="trending">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" data-scramble>Trending Now</h2>
+            <a href="{{ url_for('search') }}?sort=most_viewed" class="section-link">View All</a>
+        </div>
+        <div class="movie-grid">
+            {% for movie in trending_movies %}
+                {% include 'partials/movie_card.html' %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No trending movies yet. Check back soon!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Latest Movies -->
+<section class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" data-scramble>Latest Movies</h2>
+            <a href="{{ url_for('search') }}?type=movie&sort=newest" class="section-link">View All</a>
+        </div>
+        <div class="movie-grid">
+            {% for movie in latest_movies %}
+                {% include 'partials/movie_card.html' %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No movies posted yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Latest Series -->
+<section class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" data-scramble>Latest Series</h2>
+            <a href="{{ url_for('search') }}?type=series&sort=newest" class="section-link">View All</a>
+        </div>
+        <div class="movie-grid">
+            {% for series_item in latest_series %}
+                <div class="card series-card">
+                    <a href="{{ url_for('series_detail', series_id=series_item.id) }}" class="card-link">
+                        <div class="card-image">
+                            <img src="{{ series_item.cover_url() }}" alt="{{ series_item.title }}" loading="lazy">
+                            <div class="card-overlay">
+                                <div class="play-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="card-badges">
+                                <span class="badge badge-status badge-{{ series_item.status }}">{{ series_item.status }}</span>
+                                {% if series_item.season_count() > 0 %}
+                                    <span class="badge">S{{ series_item.season_count() }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ series_item.title }}</h3>
+                            <div class="card-meta">
+                                <span>{{ series_item.episode_count() }} episodes</span>
+                                <span>{{ series_item.views|default(0) }} views</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No series posted yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Anime Section -->
+<section class="content-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title" data-scramble>Anime</h2>
+            <a href="{{ url_for('category_page', slug='anime') }}" class="section-link">View All</a>
+        </div>
+        <div class="movie-grid">
+            {% for series_item in anime_series %}
+                <div class="card series-card">
+                    <a href="{{ url_for('series_detail', series_id=series_item.id) }}" class="card-link">
+                        <div class="card-image">
+                            <img src="{{ series_item.cover_url() }}" alt="{{ series_item.title }}" loading="lazy">
+                            <div class="card-overlay">
+                                <div class="play-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="card-badges">
+                                <span class="badge badge-status badge-{{ series_item.status }}">{{ series_item.status }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ series_item.title }}</h3>
+                            <div class="card-meta">
+                                <span>{{ series_item.episode_count() }} episodes</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+            {% for movie in anime_movies %}
+                {% include 'partials/movie_card.html' %}
+            {% endfor %}
+            {% if not anime_series and not anime_movies %}
+                <div class="empty-state">
+                    <p>No anime content yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Liked Videos{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    {% include 'user/sidebar.html' %}
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Liked Videos</h1>
+        </div>
+
+        {% if liked_movies or liked_episodes %}
+            {% if liked_movies %}
+                <section class="dashboard-section">
+                    <h3>Movies</h3>
+                    <div class="movie-grid movie-grid-small">
+                        {% for movie in liked_movies %}
+                            {% include 'partials/movie_card.html' %}
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if liked_episodes %}
+                <section class="dashboard-section">
+                    <h3>Episodes</h3>
+                    <div class="movie-grid movie-grid-small">
+                        {% for ep in liked_episodes %}
+                            <div class="card">
+                                <a href="{{ url_for('watch_episode', series_id=ep.series_id, episode_id=ep.id) }}" class="card-link">
+                                    <div class="card-image">
+                                        <img src="{{ ep.thumbnail_url() }}" alt="{{ ep.title }}" loading="lazy">
+                                        <div class="card-overlay">
+                                            <div class="play-icon">
+                                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h3 class="card-title">{{ ep.title }}</h3>
+                                        <div class="card-meta">
+                                            <span>{{ ep.series.title }}</span>
+                                            <span>S{{ ep.season.season_number }} EP{{ ep.episode_number }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                <h3>No liked videos</h3>
+                <p>Videos you like will appear here.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Discover Content</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Sidebar -->
+    {% include 'user/sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ current_user.username }}!</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                </div>
+                <div class="stat-value">{{ playlists|length }}</div>
+                <div class="stat-label">Playlists</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                </div>
+                <div class="stat-value">{{ watch_history|length }}</div>
+                <div class="stat-label">Watched</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </div>
+                <div class="stat-value">{{ liked_movies|length + liked_episodes|length }}</div>
+                <div class="stat-label">Liked</div>
+            </div>
+        </div>
+
+        <!-- Recent Playlists -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2>My Playlists</h2>
+                <a href="{{ url_for('playlists') }}" class="section-link">Manage</a>
+            </div>
+            {% if playlists %}
+                <div class="playlist-grid">
+                    {% for pl in playlists[:4] %}
+                        <a href="{{ url_for('playlist_detail', playlist_id=pl.id) }}" class="playlist-card">
+                            <div class="playlist-cover">
+                                <img src="{{ pl.cover_image() }}" alt="{{ pl.name }}">
+                                <div class="playlist-overlay">
+                                    <span class="playlist-count">{{ pl.item_count() }} video{{ 's' if pl.item_count() != 1 }}</span>
+                                </div>
+                            </div>
+                            <h3 class="playlist-title">{{ pl.name }}</h3>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No playlists yet. <a href="{{ url_for('playlists') }}">Create your first playlist</a>.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Recent Watch History -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2>Continue Watching</h2>
+                <a href="{{ url_for('watch_history') }}" class="section-link">View All</a>
+            </div>
+            {% if watch_history %}
+                <div class="history-list">
+                    {% for item in watch_history[:5] %}
+                        <div class="history-item">
+                            {% if item.movie %}
+                                <a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}" class="history-thumb">
+                                    <img src="{{ item.movie.cover_url() }}" alt="{{ item.movie.title }}">
+                                    {% if item.progress > 0 %}
+                                        <div class="history-progress">
+                                            <div class="history-progress-bar" style="width: {{ item.progress }}%"></div>
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div class="history-info">
+                                    <h4><a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}">{{ item.movie.title }}</a></h4>
+                                    <span>Movie</span>
+                                </div>
+                            {% elif item.episode %}
+                                <a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}" class="history-thumb">
+                                    <img src="{{ item.episode.thumbnail_url() }}" alt="{{ item.episode.title }}">
+                                    {% if item.progress > 0 %}
+                                        <div class="history-progress">
+                                            <div class="history-progress-bar" style="width: {{ item.progress }}%"></div>
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div class="history-info">
+                                    <h4><a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}">{{ item.episode.title }}</a></h4>
+                                    <span>{{ item.episode.series.title }} - S{{ item.episode.season.season_number }} EP{{ item.episode.episode_number }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No watch history yet. Start watching!</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ episode.title }} - {{ series.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a href="{{ url_for('series_detail', series_id=series.id) }}">{{ series.title }}</a>
+        <span>/</span>
+        <span>S{{ episode.season.season_number }} EP{{ episode.episode_number }}</span>
+    </nav>
+
+    <div class="detail-layout">
+        <div class="detail-main">
+            <!-- Video Player -->
+            <div class="video-player-container">
+                {% if episode.video_source_type == 'youtube' and video_embed_url %}
+                    <div class="video-wrapper youtube-wrapper">
+                        <iframe src="{{ video_embed_url }}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                {% elif episode.video_source_type == 'external' and episode.video_url %}
+                    <div class="video-wrapper external-wrapper">
+                        <iframe src="{{ episode.video_url }}" 
+                                frameborder="0" 
+                                allow="autoplay; fullscreen" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                {% elif episode.video_source_type == 'upload' and episode.video_file %}
+                    <video class="video-player" controls preload="metadata" poster="{{ episode.thumbnail_url() }}">
+                        <source src="{{ episode.video_source() }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% else %}
+                    <div class="video-placeholder">
+                        <div class="video-placeholder-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="2" y="2" width="20" height="20" rx="2.18"></rect>
+                                <line x1="7" y1="2" x2="7" y2="22"></line>
+                                <line x1="17" y1="2" x2="17" y2="22"></line>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                            </svg>
+                            <p>Video not available</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Episode Navigation -->
+            <div class="episode-nav">
+                {% if prev_episode %}
+                    <a href="{{ url_for('watch_episode', series_id=series.id, episode_id=prev_episode.id) }}" class="episode-nav-prev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <div>
+                            <span class="episode-nav-label">Previous</span>
+                            <span class="episode-nav-title">EP{{ prev_episode.episode_number }} {{ prev_episode.title }}</span>
+                        </div>
+                    </a>
+                {% else %}
+                    <div></div>
+                {% endif %}
+
+                {% if next_episode %}
+                    <a href="{{ url_for('watch_episode', series_id=series.id, episode_id=next_episode.id) }}" class="episode-nav-next">
+                        <div>
+                            <span class="episode-nav-label">Next</span>
+                            <span class="episode-nav-title">EP{{ next_episode.episode_number }} {{ next_episode.title }}</span>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                {% else %}
+                    <div></div>
+                {% endif %}
+            </div>
+
+            <!-- Episode Info -->
+            <div class="detail-info">
+                <h1 class="detail-title">{{ episode.title }}</h1>
+                <div class="detail-meta">
+                    <span class="meta-item">{{ series.title }}</span>
+                    <span class="meta-item">Season {{ episode.season.season_number }}</span>
+                    <span class="meta-item">Episode {{ episode.episode_number }}</span>
+                    {% if episode.duration %}<span class="meta-item">{{ episode.duration }} min</span>{% endif %}
+                    <span class="meta-item">{{ episode.views }} views</span>
+                </div>
+
+                <div class="detail-actions">
+                    {% if current_user.is_authenticated %}
+                        <button class="btn btn-primary" id="like-btn" data-episode-id="{{ episode.id }}" data-liked="{{ 'true' if user_liked else 'false' }}">
+                            <svg viewBox="0 0 24 24" fill="{{ 'currentColor' if user_liked else 'none' }}" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span id="like-count">{{ episode.like_count() }}</span>
+                        </button>
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline" id="playlist-toggle">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add to Playlist
+                            </button>
+                            <div class="dropdown-menu" id="playlist-dropdown">
+                                {% if user_playlists %}
+                                    {% for pl in user_playlists %}
+                                        <button class="dropdown-item add-to-playlist" data-playlist-id="{{ pl.id }}" data-episode-id="{{ episode.id }}">
+                                            {{ pl.name }} ({{ pl.item_count() }})
+                                        </button>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="dropdown-empty">No playlists yet</span>
+                                {% endif %}
+                                <a href="{{ url_for('playlists') }}" class="dropdown-item dropdown-create">Create New Playlist</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary">Sign in to Like</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Sign in to Save</a>
+                    {% endif %}
+
+                    <a href="{{ url_for('download', content_type='episode', content_id=episode.id) }}" class="btn btn-download">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </a>
+                </div>
+
+                {% if episode.description %}
+                    <div class="detail-description">
+                        <h3>About this episode</h3>
+                        <p>{{ episode.description }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Comments -->
+            <div class="comments-section">
+                <h3 class="comments-header">
+                    Comments 
+                    <span class="comment-count" id="comment-count">{{ episode.comment_count() }}</span>
+                </h3>
+
+                {% if current_user.is_authenticated %}
+                    <form class="comment-form" id="comment-form" data-episode-id="{{ episode.id }}">
+                        <img src="{{ current_user.avatar_url() }}" alt="" class="comment-avatar">
+                        <div class="comment-input-wrap">
+                            <textarea name="content" id="comment-content" placeholder="Add a comment..." required></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <p class="comment-login-prompt"><a href="{{ url_for('login') }}">Sign in</a> to leave a comment.</p>
+                {% endif %}
+
+                <div class="comments-list" id="comments-list">
+                    {% for comment in comments %}
+                        {% include 'partials/comment.html' %}
+                    {% else %}
+                        <p class="comments-empty" id="comments-empty">No comments yet. Be the first!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+{% endblock %}

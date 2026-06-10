@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    {% include 'user/sidebar.html' %}
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Settings</h1>
+        </div>
+
+        <!-- Profile Settings -->
+        <section class="settings-section">
+            <h3>Profile</h3>
+            <form method="POST" action="{{ url_for('user_settings') }}" enctype="multipart/form-data" class="settings-form">
+                {{ profile_form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ profile_form.username.label }}
+                    {{ profile_form.username(class='form-input') }}
+                    {% if profile_form.username.errors %}
+                        <div class="form-error">{{ profile_form.username.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ profile_form.email.label }}
+                    {{ profile_form.email(class='form-input', type='email') }}
+                    {% if profile_form.email.errors %}
+                        <div class="form-error">{{ profile_form.email.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ profile_form.avatar.label }}
+                    <div class="avatar-upload">
+                        <img src="{{ current_user.avatar_url() }}" alt="Current avatar" class="avatar-preview">
+                        {{ profile_form.avatar(class='form-file') }}
+                    </div>
+                </div>
+
+                {{ profile_form.submit(class='btn btn-primary') }}
+            </form>
+        </section>
+
+        <!-- Change Password -->
+        <section class="settings-section">
+            <h3>Change Password</h3>
+            <form method="POST" action="{{ url_for('user_settings') }}" class="settings-form">
+                {{ password_form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ password_form.current_password.label }}
+                    <div class="password-wrap">
+                        {{ password_form.current_password(class='form-input', placeholder='Current password') }}
+                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ password_form.new_password.label }}
+                    <div class="password-wrap">
+                        {{ password_form.new_password(class='form-input', placeholder='New password') }}
+                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ password_form.confirm_password.label }}
+                    <div class="password-wrap">
+                        {{ password_form.confirm_password(class='form-input', placeholder='Confirm new password') }}
+                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {{ password_form.submit(class='btn btn-primary') }}
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}

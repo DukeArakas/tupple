@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="category-header">
+        <h1>{{ category.name }}</h1>
+        <p>{{ movies|length }} movie{{ 's' if movies|length != 1 }} | {{ series_list|length }} series</p>
+    </div>
+
+    {% if movies %}
+        <section class="content-section">
+            <h2 class="section-title">Movies</h2>
+            <div class="movie-grid">
+                {% for movie in movies %}
+                    {% include 'partials/movie_card.html' %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if series_list %}
+        <section class="content-section">
+            <h2 class="section-title">Series</h2>
+            <div class="movie-grid">
+                {% for series_item in series_list %}
+                    <div class="card series-card">
+                        <a href="{{ url_for('series_detail', series_id=series_item.id) }}" class="card-link">
+                            <div class="card-image">
+                                <img src="{{ series_item.cover_url() }}" alt="{{ series_item.title }}" loading="lazy">
+                                <div class="card-overlay">
+                                    <div class="play-icon">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="card-badges">
+                                    <span class="badge badge-status badge-{{ series_item.status }}">{{ series_item.status }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">{{ series_item.title }}</h3>
+                                <div class="card-meta">
+                                    <span>{{ series_item.episode_count() }} episodes</span>
+                                    <span>{{ series_item.views }} views</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if not movies and not series_list %}
+        <div class="empty-state empty-state-large">
+            <h3>No content in this category yet</h3>
+            <p>Check back soon for new uploads.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ query or 'Search' }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Search Header -->
+    <div class="search-header">
+        <form action="{{ url_for('search') }}" method="get" class="search-form-page">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search movies, series, anime..." autocomplete="off">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="search-filters">
+        <div class="filter-group">
+            <label>Type</label>
+            <div class="filter-pills">
+                <a href="?q={{ query }}&category={{ category_slug }}" class="filter-pill {% if not content_type %}active{% endif %}">All</a>
+                <a href="?q={{ query }}&type=movie&category={{ category_slug }}" class="filter-pill {% if content_type == 'movie' %}active{% endif %}">Movies</a>
+                <a href="?q={{ query }}&type=series&category={{ category_slug }}" class="filter-pill {% if content_type == 'series' %}active{% endif %}">Series</a>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label>Category</label>
+            <select class="filter-select" onchange="window.location.href='?q={{ query }}&type={{ content_type }}&category=' + this.value">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if category_slug == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Sort</label>
+            <select class="filter-select" onchange="window.location.href='?q={{ query }}&type={{ content_type }}&category={{ category_slug }}&sort=' + this.value">
+                <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Relevance</option>
+                <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="most_viewed" {% if sort == 'most_viewed' %}selected{% endif %}>Most Viewed</option>
+                <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Rating</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-header">
+        <h2>
+            {% if query %}
+                Results for "{{ query }}"
+            {% elif category_slug %}
+                {{ categories|selectattr('slug', 'equalto', category_slug)|map(attribute='name')|first or 'All' }} Content
+            {% else %}
+                All Content
+            {% endif %}
+        </h2>
+        <span class="results-count">{{ movies|length + series_list|length }} result{{ 's' if (movies|length + series_list|length) != 1 }}</span>
+    </div>
+
+    <!-- Results Grid -->
+    {% if movies %}
+        <section class="results-section">
+            <h3 class="results-section-title">Movies</h3>
+            <div class="movie-grid">
+                {% for movie in movies %}
+                    {% include 'partials/movie_card.html' %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if series_list %}
+        <section class="results-section">
+            <h3 class="results-section-title">Series</h3>
+            <div class="movie-grid">
+                {% for series_item in series_list %}
+                    <div class="card series-card">
+                        <a href="{{ url_for('series_detail', series_id=series_item.id) }}" class="card-link">
+                            <div class="card-image">
+                                <img src="{{ series_item.cover_url() }}" alt="{{ series_item.title }}" loading="lazy">
+                                <div class="card-overlay">
+                                    <div class="play-icon">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="card-badges">
+                                    <span class="badge badge-status badge-{{ series_item.status }}">{{ series_item.status }}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">{{ series_item.title }}</h3>
+                                <div class="card-meta">
+                                    <span>{{ series_item.episode_count() }} episodes</span>
+                                    <span>{{ series_item.views }} views</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if not movies and not series_list %}
+        <div class="empty-state empty-state-large">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <h3>No results found</h3>
+            <p>Try different keywords or browse our categories.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Browse All</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

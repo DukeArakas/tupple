@@ -1,0 +1,79 @@
+{% extends 'admin/base.html' %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Series</h1>
+    <p class="admin-subtitle">Manage series and episodes</p>
+</div>
+
+<div class="admin-toolbar">
+    <div class="admin-toolbar-left"></div>
+    <a href="{{ url_for('admin_post_series') }}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create Series
+    </a>
+</div>
+
+<!-- Series Grid -->
+<div class="admin-grid">
+    {% for series_item in series_list.items %}
+        <div class="admin-card">
+            <div class="admin-card-image">
+                <img src="{{ series_item.cover_url() }}" alt="{{ series_item.title }}">
+                <div class="admin-card-badges">
+                    <span class="badge badge-status badge-{{ series_item.status }}">{{ series_item.status }}</span>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <h4 class="admin-card-title">{{ series_item.title[:35] }}{% if series_item.title|length > 35 %}...{% endif %}</h4>
+                <div class="admin-card-meta">
+                    <span>{{ series_item.season_count() }} season{{ 's' if series_item.season_count() != 1 }}</span>
+                    <span>{{ series_item.episode_count() }} ep</span>
+                </div>
+                <div class="admin-card-actions">
+                    <a href="{{ url_for('admin_manage_series', series_id=series_item.id) }}" class="btn btn-sm btn-outline">Manage</a>
+                    <form action="{{ url_for('admin_toggle_series_status', series_id=series_item.id) }}" method="POST" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-outline">
+                            {% if series_item.status == 'ongoing' %}Mark Complete{% else %}Mark Ongoing{% endif %}
+                        </button>
+                    </form>
+                    <form action="{{ url_for('admin_delete_series', series_id=series_item.id) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this series and all its episodes?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No series created yet.</p>
+            <a href="{{ url_for('admin_post_series') }}" class="btn btn-primary">Create First Series</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if series_list.pages > 1 %}
+    <div class="pagination">
+        {% if series_list.has_prev %}
+            <a href="{{ url_for('admin_series', page=series_list.prev_num) }}" class="page-link">Previous</a>
+        {% endif %}
+        {% for page_num in series_list.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == series_list.page %}
+                    <span class="page-link active">{{ page_num }}</span>
+                {% else %}
+                    <a href="{{ url_for('admin_series', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span class="page-ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if series_list.has_next %}
+            <a href="{{ url_for('admin_series', page=series_list.next_num) }}" class="page-link">Next</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

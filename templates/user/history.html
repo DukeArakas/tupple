@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Watch History{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    {% include 'user/sidebar.html' %}
+    <div class="dashboard-main">
+        <div class="dashboard-header">
+            <h1>Watch History</h1>
+        </div>
+
+        {% if history %}
+            <div class="history-list">
+                {% for item in history %}
+                    <div class="history-item">
+                        {% if item.movie %}
+                            <a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}" class="history-thumb">
+                                <img src="{{ item.movie.cover_url() }}" alt="{{ item.movie.title }}">
+                                {% if item.progress > 0 %}
+                                    <div class="history-progress">
+                                        <div class="history-progress-bar" style="width: {{ item.progress }}%"></div>
+                                    </div>
+                                {% endif %}
+                            </a>
+                            <div class="history-info">
+                                <h4><a href="{{ url_for('movie_detail', movie_id=item.movie.id) }}">{{ item.movie.title }}</a></h4>
+                                <span>Movie</span>
+                                <span class="history-time">{{ item.watched_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                        {% elif item.episode %}
+                            <a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}" class="history-thumb">
+                                <img src="{{ item.episode.thumbnail_url() }}" alt="{{ item.episode.title }}">
+                                {% if item.progress > 0 %}
+                                    <div class="history-progress">
+                                        <div class="history-progress-bar" style="width: {{ item.progress }}%"></div>
+                                    </div>
+                                {% endif %}
+                            </a>
+                            <div class="history-info">
+                                <h4><a href="{{ url_for('watch_episode', series_id=item.episode.series_id, episode_id=item.episode.id) }}">{{ item.episode.title }}</a></h4>
+                                <span>{{ item.episode.series.title }} - S{{ item.episode.season.season_number }} EP{{ item.episode.episode_number }}</span>
+                                <span class="history-time">{{ item.watched_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No watch history yet.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Start Watching</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
